@@ -1,3 +1,4 @@
+// Package ssaviz helps user to visualize SSA function.
 package ssaviz
 
 // This file contains public APIs of go-ssaviz.
@@ -11,7 +12,7 @@ import (
 // Package meta informations.
 const (
 	Prog    = "ssaviz"
-	Version = "1.0.0"
+	Version = "0.1.0"
 	Author  = "Shengyu Zhang <silverrainz.me>"
 	Desc    = "Visualize Go SSA function using Graphviz"
 )

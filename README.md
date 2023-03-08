@@ -1,7 +1,5 @@
 # go-ssaviz
 
-[![godoc](https://pkg.go.dev/badge/github.com/SilverRainZ/go-ssaviz)](https://pkg.go.dev/github.com/SilverRainZ/go-ssaviz)
-
 ![cover](pkg/ssaviz/testdata/svg/buildHTML.svg)
 
 Visualize Go SSA function using Graphviz.
@@ -49,7 +47,7 @@ We also provides a separated Go package:
 $ go get -u github.com/SilverRainZ/go-ssaviz/pkg/ssaviz
 ```
 
-See [GoDoc](https://pkg.go.dev/github.com/SilverRainZ/go-ssaviz) for more details.
+See [![godoc](https://pkg.go.dev/badge/github.com/SilverRainZ/go-ssaviz/pkg/ssaviz)](https://pkg.go.dev/github.com/SilverRainZ/go-ssaviz/pkg/ssaviz) for more details.
 
 ## Contact
 
