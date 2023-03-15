@@ -39,63 +39,71 @@ func genCFGNodeID(blk *ssa.BasicBlock) string {
 //
 // This function borrows a lot from [golang.org/x/tools/go/ssa.WriteFunction].
 func genCFGNodeLabel(blk *ssa.BasicBlock) string {
-	const punchcard = 50
-
 	doc := etree.NewDocument()
 
 	table := doc.CreateElement("table")
 	table.CreateAttr("border", "0")
 	table.CreateAttr("cellborder", "0")
 	table.CreateAttr("cellspacing", "0")
-	table.CreateAttr("cellpadding", "4")
+	table.CreateAttr("cellpadding", "2")
+	table.CreateAttr("align", "left")
 
-	header := table.CreateElement("tr").CreateElement("td")
-	header.CreateAttr("bgcolor", "2")
-	header.CreateAttr("balign", "left")
-	header = header.CreateElement("font")
-	header.CreateAttr("color", "white")
-	bidx := fmt.Sprintf("%d:", blk.Index)
-	header.CreateText(bidx)
-	bmsg := fmt.Sprintf("%s P:%d S:%d", blk.Comment, len(blk.Preds), len(blk.Succs))
-	header.CreateText(fmt.Sprintf("%*s%s", punchcard-1-len(bidx)-len(bmsg), "", bmsg))
-	header.CreateElement("br")
+	header := table.CreateElement("tr")
+	lheader := header.CreateElement("td")
+	lheader.CreateAttr("bgcolor", "5")
+	lheader.CreateAttr("heigth", "200")
+	lheader.CreateAttr("align", "left")
+	lheader = lheader.CreateElement("font")
+	lheader.CreateAttr("color", "white")
+	lheader.CreateText(fmt.Sprintf("%d:", blk.Index))
 
-	body := table.CreateElement("tr").CreateElement("td")
-	body.CreateAttr("bgcolor", "1")
-	body.CreateAttr("balign", "left")
-	body = body.CreateElement("font")
-	for _, instr := range blk.Instrs {
+	rheader := header.CreateElement("td")
+	rheader.CreateAttr("bgcolor", "5")
+	rheader.CreateAttr("align", "right")
+	rheader.CreateAttr("heigth", "200")
+	rheader = rheader.CreateElement("font")
+	rheader.CreateAttr("color", "white")
+	rheader.CreateText(fmt.Sprintf("%s P:%d S:%d", blk.Comment, len(blk.Preds), len(blk.Succs)))
+
+	for i, instr := range blk.Instrs {
+		row := table.CreateElement("tr")
+		bgcolor := "2"
+		if i%2 == 1 {
+			bgcolor = "3"
+		}
+
+		lcell := row.CreateElement("td")
+		lcell.CreateAttr("bgcolor", bgcolor)
+		lcell.CreateAttr("align", "left")
+		lcell.CreateAttr("href", "")
+		lcell.CreateAttr("tooltip", fmt.Sprintf("%T", instr))
+		ltext := lcell.CreateElement("font")
+
+		rcell := row.CreateElement("td")
+		rcell.CreateAttr("bgcolor", bgcolor)
+		rcell.CreateAttr("align", "right")
+		rtext := rcell.CreateElement("font").CreateElement("i")
+
 		switch v := instr.(type) {
-		case ssa.Value:
-			l := punchcard
-			// Left-align the instruction.
+		case ssa.Value: // TODO: also align the name?
 			if name := v.Name(); name != "" {
-				s := fmt.Sprintf("%s = ", name)
-				body.CreateText(s)
-				l -= len(s)
+				ltext.CreateText(fmt.Sprintf("%s = ", name))
 			}
-			s := instr.String()
-			body.CreateText(s)
-			l -= len(s)
+			ltext.CreateText(instr.String())
 			// Right-align the type if there's space.
 			if t := v.Type(); t != nil {
-				body.CreateText(" ")
-				ts := relType(t, blk.Parent().Pkg.Pkg)
-				l -= len(ts) + len("  ") // (spaces before and after type)
-				if l > 0 {
-					body.CreateText(fmt.Sprintf("%*s", l, ""))
-				}
-				body.CreateText(ts)
+				rtext.CreateText(relType(t, blk.Parent().Pkg.Pkg))
+				rcell.CreateAttr("href", "")
+				rcell.CreateAttr("tooltip", t.String())
 			}
 		case nil:
 			// Be robust against bad transforms.
-			s := "<deleted>"
-			body.CreateText(fmt.Sprintf("%s%*s", s, punchcard-len(s), ""))
+			ltext.CreateElement("s").CreateText("deleted")
+			rtext.CreateText(" ")
 		default:
-			s := instr.String()
-			body.CreateText(fmt.Sprintf("%s%*s", s, punchcard-len(s), ""))
+			ltext.CreateText(instr.String())
+			rtext.CreateText(" ")
 		}
-		body.CreateElement("br")
 	}
 
 	var buf bytes.Buffer
@@ -148,7 +156,7 @@ func buildCFGNode(g *dot.Graph, blk *ssa.BasicBlock) dot.Node {
 		Attr("shape", "none").
 		Attr("label", dot.Literal(genCFGNodeLabel(blk))).
 		Attr("fontname", Fontame).
-		Attr("colorscheme", "blues3")
+		Attr("colorscheme", "blues9")
 
 	for _, succ := range blk.Succs {
 		next := buildCFGNode(g, succ)
@@ -164,9 +172,9 @@ func buildCFGInfo(g *dot.Graph, f *ssa.Function) {
 		Attr("shape", "box").
 		Attr("label", dot.Literal(genCFGInfo(f))).
 		Attr("fontname", Fontame).
-		Attr("colorscheme", "blues3").
-		Attr("color", "2").
-		Attr("fillcolor", "1")
+		Attr("colorscheme", "blues9").
+		Attr("color", "3").
+		Attr("fillcolor", "2")
 }
 
 func relType(t types.Type, from *types.Package) string {
