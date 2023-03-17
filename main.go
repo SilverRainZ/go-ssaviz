@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sort"
 	"syscall"
 
 	"github.com/SilverRainZ/go-ssaviz/pkg/ssaviz"
@@ -84,6 +85,12 @@ func main() {
 			graphs = append(graphs, g)
 		}
 	}
+
+	// Sort graphs by name.
+	sort.Slice(graphs, func(i, j int) bool {
+		return graphs[i].Name < graphs[j].Name
+	})
+
 	html, err := ssaviz.Report(graphs)
 	if err != nil {
 		log.Fatalf("failed to build report: %s", err)
