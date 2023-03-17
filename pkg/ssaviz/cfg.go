@@ -3,6 +3,7 @@ package ssaviz
 import (
 	"bytes"
 	"fmt"
+	"go/token"
 	"go/types"
 	"log"
 	"strconv"
@@ -33,6 +34,50 @@ func buildCFG(f *ssa.Function) *Graph {
 
 func genCFGNodeID(blk *ssa.BasicBlock) string {
 	return strconv.Itoa(blk.Index)
+}
+
+func genInstrTooltip(instr ssa.Instruction) string {
+	var buf bytes.Buffer
+
+	fmt.Fprintf(&buf, "Type: %T\n", instr)
+	if p := instr.Pos(); p != token.NoPos {
+		pos := instr.Parent().Prog.Fset.Position(p)
+		fmt.Fprintf(&buf, "Line: %d\n", pos.Line)
+	}
+
+	if v, ok := instr.(ssa.Value); ok {
+		if refs := v.Referrers(); refs != nil {
+			fmt.Fprintf(&buf, "Referrers: %d\n", len(*refs))
+		}
+	}
+
+	return buf.String()
+}
+
+func genBlockTooltip(blk *ssa.BasicBlock) string {
+	blockIndexes := func(blks []*ssa.BasicBlock) []int {
+		var indexes []int
+		for _, blk := range blks {
+			indexes = append(indexes, blk.Index)
+		}
+		return indexes
+	}
+
+	var buf bytes.Buffer
+
+	fmt.Fprintf(&buf, "Index: %d\n", blk.Index)
+	if blk.Comment != "" {
+		fmt.Fprintf(&buf, "Comment: %s\n", blk.Comment)
+	}
+	fmt.Fprintf(&buf, "Instructions: %d\n", len(blk.Instrs))
+	fmt.Fprintf(&buf, "Predecessors: %d, %v\n", len(blk.Preds), blockIndexes(blk.Preds))
+	fmt.Fprintf(&buf, "Successors: %d, %v\n", len(blk.Succs), blockIndexes(blk.Succs))
+	fmt.Fprintf(&buf, "Dominees: %d, %v\n", len(blk.Dominees()), blockIndexes(blk.Dominees()))
+	if idom := blk.Idom(); idom != nil {
+		fmt.Fprintf(&buf, "Idom: %d\n", idom.Index)
+	}
+
+	return buf.String()
 }
 
 // genCFGNodeLabel generates basic block label in Graphviz HTML.
@@ -76,7 +121,9 @@ func genCFGNodeLabel(blk *ssa.BasicBlock) string {
 		lcell.CreateAttr("bgcolor", bgcolor)
 		lcell.CreateAttr("align", "left")
 		lcell.CreateAttr("href", "")
-		lcell.CreateAttr("tooltip", fmt.Sprintf("%T", instr))
+		// FIXME: Hwo to create newline in tooltip?
+		// https://stackoverflow.com/a/27448551 does not work for me.
+		lcell.CreateAttr("tooltip", strings.ReplaceAll(genInstrTooltip(instr), "\n", "    "))
 		ltext := lcell.CreateElement("font")
 
 		rcell := row.CreateElement("td")
@@ -85,16 +132,20 @@ func genCFGNodeLabel(blk *ssa.BasicBlock) string {
 		rtext := rcell.CreateElement("font").CreateElement("i")
 
 		switch v := instr.(type) {
-		case ssa.Value: // TODO: also align the name?
+		case ssa.Value:
+
+			// Instruction on the left.
 			if name := v.Name(); name != "" {
+				// TODO: also align the name?
 				ltext.CreateText(fmt.Sprintf("%s = ", name))
 			}
 			ltext.CreateText(instr.String())
-			// Right-align the type if there's space.
+
+			// Type on the right.
 			if t := v.Type(); t != nil {
-				rtext.CreateText(relType(t, blk.Parent().Pkg.Pkg))
-				rcell.CreateAttr("href", "")
-				rcell.CreateAttr("tooltip", t.String())
+				rtext.CreateText(relType(t, blk.Parent().Pkg.Pkg)) // TODO: shorten the type name
+				rcell.CreateAttr("href", "")                       // TODO: link to pkg.go.dev
+				rcell.CreateAttr("tooltip", types.TypeString(t, nil))
 			}
 		case nil:
 			// Be robust against bad transforms.
@@ -155,6 +206,7 @@ func buildCFGNode(g *dot.Graph, blk *ssa.BasicBlock) dot.Node {
 	n := g.Node(genCFGNodeID(blk)).
 		Attr("shape", "none").
 		Attr("label", dot.Literal(genCFGNodeLabel(blk))).
+		Attr("tooltip", genBlockTooltip(blk)).
 		Attr("fontname", Fontame).
 		Attr("colorscheme", "blues9")
 
