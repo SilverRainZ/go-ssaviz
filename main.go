@@ -24,10 +24,11 @@ var (
 	fset = flag.NewFlagSet(ssaviz.Prog, flag.ExitOnError)
 
 	// Command line flags.
-	help bool
-	view bool
-	out  string
-	ver  bool
+	help  bool
+	view  bool
+	out   string
+	ver   bool
+	tests bool
 )
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
 	fset.BoolVar(&ssaviz.Debug, "v", false, "print verbose log")
 	fset.StringVar(&out, "o", "ssaviz.html", "HTML report for output")
 	fset.BoolVar(&view, "view", false, "view HTML report in system default application")
+	fset.BoolVar(&tests, "tests", false, "include test packages")
 	fset.Parse(os.Args[1:])
 
 	// Signal handler.
@@ -139,7 +141,8 @@ func loadSSA(pkgPaths []string) (*ssa.Program, []*ssa.Package, error) {
 	// Load packages.
 	cfg := &packages.Config{
 		// Required by ssautil.AllPackages.
-		Mode: packages.LoadAllSyntax,
+		Mode:  packages.LoadAllSyntax,
+		Tests: tests,
 	}
 	pkgs, err := packages.Load(cfg, pkgPaths...)
 	if err != nil {
