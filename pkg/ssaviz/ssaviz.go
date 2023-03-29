@@ -32,7 +32,7 @@ func Build(kind Kind, f *ssa.Function) (*Graph, error) {
 	}
 }
 
-// Report aggregates multiple graphs to a single HTML report.
-func Report(graphs []*Graph) (*HTML, error) {
+// Render renders multiple graphs to a single HTML documentation.
+func Render(graphs []*Graph) (*HTML, error) {
 	return buildHTML(graphs)
 }

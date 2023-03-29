@@ -31,7 +31,7 @@ var cfgAnalyzer = &analysis.Analyzer{
 			}
 		}
 
-		if _, err := Report(result); err != nil {
+		if _, err := Render(result); err != nil {
 			return nil, err
 		}
 

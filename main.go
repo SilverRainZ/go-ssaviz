@@ -91,7 +91,7 @@ func main() {
 		return graphs[i].Name < graphs[j].Name
 	})
 
-	html, err := ssaviz.Report(graphs)
+	html, err := ssaviz.Render(graphs)
 	if err != nil {
 		log.Fatalf("failed to build report: %s", err)
 	}
