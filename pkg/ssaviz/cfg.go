@@ -17,7 +17,7 @@ import (
 // buildCFG visualize an SSA function as a directed graph.
 func buildCFG(f *ssa.Function) *Graph {
 	g := &Graph{
-		Name: f.Name(),
+		Name: f.String(),
 		Kind: CFG,
 		g:    dot.NewGraph(dot.Directed),
 	}
