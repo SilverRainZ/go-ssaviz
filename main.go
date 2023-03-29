@@ -80,11 +80,7 @@ func main() {
 			if !ok {
 				continue
 			}
-			g, err := ssaviz.Build(ssaviz.CFG, f)
-			if err != nil {
-				log.Printf("failed to build graph: %s", err)
-			}
-			graphs = append(graphs, g)
+			graphs = append(graphs, buildCFGRec(f)...)
 		}
 	}
 
@@ -106,6 +102,19 @@ func main() {
 			log.Fatalf("failed to view report: %s", err)
 		}
 	}
+}
+
+func buildCFGRec(f *ssa.Function) []*ssaviz.Graph {
+	var graphs []*ssaviz.Graph
+	g, err := ssaviz.Build(ssaviz.CFG, f)
+	if err != nil {
+		log.Printf("failed to build graph: %s", err)
+	}
+	graphs = append(graphs, g)
+	for _, f := range f.AnonFuncs {
+		graphs = append(graphs, buildCFGRec(f)...)
+	}
+	return graphs
 }
 
 func printUsage(err error) {
