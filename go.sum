@@ -1,5 +1,7 @@
 github.com/beevik/etree v1.1.0 h1:T0xke/WvNtMoCqgzPhkX2r4rjY3GDZFi+FjpRZY2Jbs=
 github.com/beevik/etree v1.1.0/go.mod h1:r8Aw8JqVegEf0w2fDnATrX9VpkMcyFeM0FhwO62wh+A=
+github.com/bytedance/gg v1.0.0 h1:NIV/doHwRI9L2uqXdUI36TiJDpZ2GP8eehT8tKmRcXc=
+github.com/bytedance/gg v1.0.0/go.mod h1:MeGhXyy5K20hNAU9GkMM51sXdm/lsqdU0CxwIiGvZpo=
 github.com/emicklei/dot v1.3.1 h1:45fM+Qyq25fvT4jWNZnvJp3bGWl6OdxC1vxJ7+FWXQM=
 github.com/emicklei/dot v1.3.1/go.mod h1:DeV7GvQtIw4h2u73RKBkkFdvVAz0D9fzeJrgPW6gy/s=
 github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 h1:JIAuq3EEf9cgbU6AtGPK4CTG3Zf6CKMNqf0MHTggAUA=
